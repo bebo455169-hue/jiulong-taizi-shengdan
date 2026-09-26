@@ -20,12 +20,11 @@
 </header>
 
 <main class="wrap">
-  <div class="steps" aria-label="報名進度">
+  <div class="steps steps4" aria-label="報名進度">
     <div class="step active" data-stepdot="1"><b>1</b><span>報名方式</span></div>
     <div class="step" data-stepdot="2"><b>2</b><span>填寫資料</span></div>
     <div class="step" data-stepdot="3"><b>3</b><span>確認資料</span></div>
-    <div class="step" data-stepdot="4"><b>4</b><span>儲存圖片</span></div>
-    <div class="step" data-stepdot="5"><b>5</b><span>傳 LINE</span></div>
+    <div class="step" data-stepdot="4"><b>4</b><span>傳送報名單</span></div>
   </div>
 
   <section class="panel active" id="step1">
@@ -115,27 +114,21 @@
   </section>
 
   <section class="panel" id="step4">
-    <div class="title"><span>步驟 4</span><h2>先儲存報名單圖片</h2><p><b>這一步很重要：</b>請先把下面的報名確認單存成照片，再前往 LINE。</p></div>
+    <div class="title"><span>步驟 4／最後一步</span><h2>傳送報名單</h2><p>請確認下方報名單，按一次「傳送報名單」即可。</p></div>
     <div id="slipPreview" class="slip"></div>
-    <button id="saveImage" class="primary full">⬇️ 儲存報名單照片</button>
-    <div id="saveHelp" class="helpBox">
-      <b>如果手機沒有直接出現「儲存」：</b><br>
-      會先開啟報名單圖片，請長按圖片 → 選「儲存到照片」。<br>
-      也可以直接截圖作為備用。
-    </div>
-    <button id="toLineStep" class="lineBtn full locked" disabled>請先儲存報名單照片</button>
-  </section>
 
-  <section class="panel" id="step5">
-    <div class="title"><span>步驟 5／最後一步</span><h2>把報名單照片傳到官方 LINE</h2><p>只有儲存圖片還沒有完成報名，請完成下面 4 個動作。</p></div>
-    <div class="lineSteps">
-      <div><b>1</b><span>按下「前往官方 LINE」</span></div>
-      <div><b>2</b><span>在 LINE 聊天室按照片圖示／＋</span></div>
-      <div><b>3</b><span>選擇剛才儲存的「報名確認單」照片</span></div>
-      <div><b>4</b><span>按傳送，等待工作人員回覆確認</span></div>
+    <button id="shareSlip" class="lineBtn full shareMain">📤 傳送報名單</button>
+    <div class="shareHint">按下後會開啟手機分享選單，請選擇 <b>LINE</b> 傳送。</div>
+
+    <button id="saveImage" class="secondary full fallbackBtn">⬇️ 無法分享？改用儲存圖片</button>
+    <div id="fallbackArea" class="helpBox hidden">
+      <b>備用方式</b><br>
+      已產生報名單圖片。請儲存圖片後，再按下方按鈕前往官方 LINE 傳送。
+      <div id="generatedImageBox"></div>
+      <a class="lineBtn full" href="https://lin.ee/u1LZ3VU" target="_blank" rel="noopener">前往官方 LINE</a>
     </div>
-    <a id="officialLine" class="lineBtn full" href="https://lin.ee/u1LZ3VU" target="_blank" rel="noopener">前往混元九龍太子官方 LINE</a>
-    <div class="danger">⚠️ 收到工作人員確認後，才算完成報名。<br>祈安禮斗名額亦以工作人員回覆為準。</div>
+
+    <div class="danger">⚠️ 將報名單傳送至官方 LINE，並收到工作人員確認後，才算完成報名。祈安禮斗名額以工作人員回覆為準。</div>
   </section>
 </main>
 

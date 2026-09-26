@@ -92,7 +92,7 @@ function renderFinal(){
  $("#grandTotal").textContent=money(state.people.reduce((s,p)=>s+p.total,0));
 }
 $("#backPeople").onclick=()=>{renderPeople();show(state.mode==="group"?"stepPeople":"step2",2)}
-$("#makeSlip").onclick=()=>{renderSlip();state.imageSaved=false;$("#toLineStep").disabled=true;$("#toLineStep").classList.add("locked");$("#toLineStep").textContent="請先儲存報名單照片";show("step4",4)}
+$("#makeSlip").onclick=()=>{renderSlip();show("step4",4)}
 function renderSlip(){
  const total=state.people.reduce((s,p)=>s+p.total,0);
  $("#slipPreview").innerHTML=`<div class="slipHead"><h2>混元九龍太子聖誕祈福科儀</h2><b>報名確認單</b><div>共 ${state.people.length} 位</div></div>`+
@@ -104,24 +104,79 @@ function wrap(ctx,text,x,y,maxWidth,lineHeight){
  const chars=[...text];let line="",lines=[];for(const ch of chars){let test=line+ch;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=ch}else line=test}if(line)lines.push(line);lines.forEach((l,i)=>ctx.fillText(l,x,y+i*lineHeight));return y+lines.length*lineHeight
 }
 function makeCanvas(){
- const W=1080,pad=70,line=46;let estimated=330+state.people.reduce((s,p)=>s+300+p.rituals.length*25,s);const H=Math.max(900,estimated);
- const c=document.createElement("canvas");c.width=W;c.height=H;const ctx=c.getContext("2d");ctx.fillStyle="#fffaf0";ctx.fillRect(0,0,W,H);ctx.strokeStyle="#8b6325";ctx.lineWidth=6;ctx.strokeRect(24,24,W-48,H-48);
- ctx.textAlign="center";ctx.fillStyle="#681922";ctx.font="bold 48px serif";ctx.fillText("混元九龍太子聖誕祈福科儀",W/2,90);ctx.font="bold 34px sans-serif";ctx.fillText("報名確認單",W/2,142);ctx.font="26px sans-serif";ctx.fillStyle="#3b2b22";ctx.fillText(`共 ${state.people.length} 位`,W/2,184);ctx.textAlign="left";let y=240;
- state.people.forEach((p,i)=>{ctx.font="bold 32px sans-serif";ctx.fillStyle="#681922";ctx.fillText(`${i+1}. ${p.name}`,pad,y);y+=48;ctx.font="25px sans-serif";ctx.fillStyle="#2d241e";y=wrap(ctx,`生辰：${birthText(p)}`,pad,y,W-pad*2,line);y=wrap(ctx,`時辰：${p.time}　生肖：${p.zodiac}`,pad,y,W-pad*2,line);y=wrap(ctx,`地址：${p.address}`,pad,y,W-pad*2,line);y=wrap(ctx,`科儀：${p.rituals.map(r=>ritualNames[r]+" "+money(ritualPrices[r])).join("、")}`,pad,y,W-pad*2,line);if(p.attendance)y=wrap(ctx,`祭改到場：${p.attendance==="yes"?"本人會到場":"本人不克到場（需提前準備本人衣物）"}`,pad,y,W-pad*2,line);ctx.font="bold 26px sans-serif";ctx.fillText(`小計：${money(p.total)}`,pad,y);y+=48;ctx.strokeStyle="#cbb89b";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(pad,y-18);ctx.lineTo(W-pad,y-18);ctx.stroke()});
- ctx.font="bold 36px sans-serif";ctx.fillStyle="#681922";ctx.textAlign="right";ctx.fillText(`應繳總額：${money(state.people.reduce((s,p)=>s+p.total,0))}`,W-pad,y+10);y+=68;ctx.textAlign="left";ctx.font="22px sans-serif";ctx.fillStyle="#5b514a";wrap(ctx,"※ 祈安禮斗限25人，以官方LINE工作人員確認名額為準。",pad,y,W-pad*2,36);wrap(ctx,"※ 請將本報名單照片傳至官方LINE，經工作人員確認後才算完成報名。",pad,y+38,W-pad*2,36);return c
+ const W=1080,pad=70,line=46;
+ // V4 bug fix: previous height calculation referenced an undefined variable.
+ const estimated=430+state.people.reduce((sum,p)=>sum+330+(p.rituals.length*35)+(p.attendance?50:0),0);
+ const H=Math.max(1000,estimated);
+ const c=document.createElement("canvas");c.width=W;c.height=H;
+ const ctx=c.getContext("2d");
+ ctx.fillStyle="#fffaf0";ctx.fillRect(0,0,W,H);
+ ctx.strokeStyle="#8b6325";ctx.lineWidth=6;ctx.strokeRect(24,24,W-48,H-48);
+ ctx.textAlign="center";ctx.fillStyle="#681922";ctx.font="bold 48px sans-serif";
+ ctx.fillText("混元九龍太子聖誕祈福科儀",W/2,90);
+ ctx.font="bold 34px sans-serif";ctx.fillText("報名確認單",W/2,142);
+ ctx.font="26px sans-serif";ctx.fillStyle="#3b2b22";ctx.fillText(`共 ${state.people.length} 位`,W/2,184);
+ ctx.textAlign="left";let y=240;
+ state.people.forEach((p,i)=>{
+   ctx.font="bold 32px sans-serif";ctx.fillStyle="#681922";ctx.fillText(`${i+1}. ${p.name}`,pad,y);y+=48;
+   ctx.font="25px sans-serif";ctx.fillStyle="#2d241e";
+   y=wrap(ctx,`生辰：${birthText(p)}`,pad,y,W-pad*2,line);
+   y=wrap(ctx,`時辰：${p.time}　生肖：${p.zodiac}`,pad,y,W-pad*2,line);
+   y=wrap(ctx,`地址：${p.address}`,pad,y,W-pad*2,line);
+   y=wrap(ctx,`科儀：${p.rituals.map(r=>ritualNames[r]+" "+money(ritualPrices[r])).join("、")}`,pad,y,W-pad*2,line);
+   if(p.attendance)y=wrap(ctx,`祭改到場：${p.attendance==="yes"?"本人會到場":"本人不克到場（需提前準備本人衣物）"}`,pad,y,W-pad*2,line);
+   ctx.font="bold 26px sans-serif";ctx.fillText(`小計：${money(p.total)}`,pad,y);y+=58;
+   ctx.strokeStyle="#cbb89b";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(pad,y-20);ctx.lineTo(W-pad,y-20);ctx.stroke();
+ });
+ ctx.font="bold 36px sans-serif";ctx.fillStyle="#681922";ctx.textAlign="right";
+ ctx.fillText(`應繳總額：${money(state.people.reduce((s,p)=>s+p.total,0))}`,W-pad,y+10);y+=68;
+ ctx.textAlign="left";ctx.font="22px sans-serif";ctx.fillStyle="#5b514a";
+ y=wrap(ctx,"※ 祈安禮斗限25人，以官方LINE工作人員確認名額為準。",pad,y,W-pad*2,36);
+ wrap(ctx,"※ 請將本報名單傳至官方LINE，經工作人員確認後才算完成報名。",pad,y+8,W-pad*2,36);
+ return c;
 }
-$("#saveImage").onclick=()=>{
+function canvasBlob(){
+ return new Promise((resolve,reject)=>{
+   try{
+     const c=makeCanvas();
+     c.toBlob(blob=>blob?resolve(blob):reject(new Error("blob failed")),"image/png",1);
+   }catch(e){reject(e)}
+ });
+}
+async function getSlipFile(){
+ const blob=await canvasBlob();
+ return new File([blob],"混元九龍太子聖誕-報名確認單.png",{type:"image/png"});
+}
+async function showFallback(){
  try{
-  const c=makeCanvas();c.toBlob(blob=>{
-   if(!blob){alert("圖片產生失敗，請直接截圖下方報名確認單。");return}
-   const file=new File([blob],"混元九龍太子聖誕-報名確認單.png",{type:"image/png"});
-   const done=()=>{state.imageSaved=true;$("#toLineStep").disabled=false;$("#toLineStep").classList.remove("locked");$("#toLineStep").textContent="我已儲存圖片，下一步 → 官方 LINE"};
-   if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-     navigator.share({files:[file],title:"混元九龍太子聖誕報名確認單"}).then(done).catch(()=>{});
+   const blob=await canvasBlob();
+   const url=URL.createObjectURL(blob);
+   $("#fallbackArea").classList.remove("hidden");
+   $("#generatedImageBox").innerHTML="";
+   const img=document.createElement("img");img.src=url;img.alt="報名確認單圖片";
+   $("#generatedImageBox").appendChild(img);
+   const a=document.createElement("a");a.href=url;a.download="混元九龍太子聖誕-報名確認單.png";a.className="primary full";a.style.display="block";a.style.marginTop="10px";a.style.textDecoration="none";a.style.textAlign="center";a.textContent="⬇️ 下載／儲存這張報名單";
+   $("#generatedImageBox").appendChild(a);
+   $("#fallbackArea").scrollIntoView({behavior:"smooth",block:"start"});
+ }catch(e){
+   alert("這個瀏覽器無法產生圖片，請直接截圖畫面中的報名確認單，再前往官方 LINE 傳送。");
+   $("#fallbackArea").classList.remove("hidden");
+ }
+}
+$("#shareSlip").onclick=async()=>{
+ const btn=$("#shareSlip"),old=btn.textContent;btn.disabled=true;btn.textContent="正在產生報名單…";
+ try{
+   const file=await getSlipFile();
+   if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+     try{
+       await navigator.share({files:[file],title:"混元九龍太子聖誕報名確認單",text:"混元九龍太子聖誕祈福科儀報名確認單"});
+     }catch(e){
+       if(e && e.name!=="AbortError") await showFallback();
+     }
    }else{
-     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);done();
+     await showFallback();
    }
-  },"image/png");
- }catch(e){alert("此手機無法自動產生圖片，請直接截圖報名確認單。");state.imageSaved=true;$("#toLineStep").disabled=false;$("#toLineStep").classList.remove("locked");$("#toLineStep").textContent="我已截圖，下一步 → 官方 LINE"}
+ }catch(e){await showFallback()}
+ finally{btn.disabled=false;btn.textContent=old}
 };
-$("#toLineStep").onclick=()=>{if(state.imageSaved)show("step5",5)};
+$("#saveImage").onclick=showFallback;
