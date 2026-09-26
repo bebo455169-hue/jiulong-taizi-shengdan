@@ -1,119 +1,127 @@
-'use strict';
-const $ = id => document.getElementById(id);
-const rituals = [...document.querySelectorAll('.ritual')];
-const money = n => Number(n || 0).toLocaleString('zh-TW');
-const escapeHtml = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const val = id => ($(id)?.value || '').trim();
-const selected = () => rituals.filter(r => r.checked);
-
-// 生肖與時辰：使用事件監聽，避免行動版 Safari 的 onclick 相容問題。
-const zodiacs = ['🐭 鼠','🐮 牛','🐯 虎','🐰 兔','🐲 龍','🐍 蛇','🐴 馬','🐐 羊','🐵 猴','🐔 雞','🐶 狗','🐷 豬'];
-const hours = ['子時 23–01','丑時 01–03','寅時 03–05','卯時 05–07','辰時 07–09','巳時 09–11','午時 11–13','未時 13–15','申時 15–17','酉時 17–19','戌時 19–21','亥時 21–23','吉時（不清楚）'];
-function makeChoices(container, values, target, className='') {
-  values.forEach(label => {
-    const b = document.createElement('button'); b.type='button'; b.className=className; b.textContent=label;
-    b.addEventListener('click', () => {
-      container.querySelectorAll('button').forEach(x => x.classList.remove('on'));
-      b.classList.add('on');
-      $(target).value = label.includes('（不清楚）') ? '吉時' : label.replace(/^\S+\s(?=[鼠牛虎兔龍蛇馬羊猴雞狗豬]$)/,'');
-      update();
-    });
-    container.appendChild(b);
-  });
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const state={mode:null,people:[],editing:null,calendar:null,time:null,zodiac:null,attendance:null,rituals:new Set(),imageSaved:false};
+const zodiac=["鼠","牛","虎","兔","龍","蛇","馬","羊","猴","雞","狗","豬"];
+const times=["子時","丑時","寅時","卯時","辰時","巳時","午時","未時","申時","酉時","戌時","亥時","吉時"];
+const ritualNames={lamp:"七星元辰燈",dou:"祈安禮斗",gaiji:"祭改"};
+const ritualPrices={lamp:200,dou:1200,gaiji:200};
+const money=n=>"NT$"+n.toLocaleString("zh-TW");
+function show(id,step){
+  $$(".panel").forEach(x=>x.classList.remove("active")); $("#"+id).classList.add("active");
+  $$(".step").forEach((x,i)=>{x.classList.toggle("active",i+1===step);x.classList.toggle("done",i+1<step)});
+  scrollTo({top:0,behavior:"smooth"});
 }
-makeChoices($('zodiacChoices'), zodiacs, 'zodiac');
-makeChoices($('hourChoices'), hours, 'birthHour');
-
-// 國曆 / 農曆
-let calendarMode = 'solar';
-document.querySelectorAll('.calBtn').forEach(btn => btn.addEventListener('click', () => {
-  calendarMode = btn.dataset.cal;
-  document.querySelectorAll('.calBtn').forEach(x => x.classList.toggle('on', x === btn));
-  $('solarBox').classList.toggle('hidden', calendarMode !== 'solar');
-  $('lunarBox').classList.toggle('hidden', calendarMode !== 'lunar');
-}));
-function solarToLunar(dateStr) {
-  if (!dateStr) return '';
-  const [y,m,d] = dateStr.split('-').map(Number);
-  const date = new Date(y, m-1, d, 12, 0, 0);
-  try {
-    const fmt = new Intl.DateTimeFormat('zh-TW-u-ca-chinese', {year:'numeric', month:'long', day:'numeric'});
-    return fmt.format(date).replace(/\s/g,'');
-  } catch (e) { return ''; }
-}
-$('convertLunar').addEventListener('click', () => {
-  const s = val('solarDate');
-  if (!s) { $('lunarResult').textContent='請先選擇國曆出生日期。'; return; }
-  const lunar = solarToLunar(s);
-  $('lunarResult').textContent = lunar ? `農曆：${lunar}` : '此瀏覽器無法自動換算，請改用「直接填農曆」。';
+$$(".bigChoice").forEach(b=>b.onclick=()=>{
+  $$(".bigChoice").forEach(x=>x.classList.remove("selected"));b.classList.add("selected");
+  state.mode=b.dataset.mode; $("#toStep2").disabled=false;$("#toStep2").textContent="下一步：填寫資料 →";
 });
-$('solarDate').addEventListener('change', () => {
-  const s = val('solarDate'); if (!s) return;
-  const lunar = solarToLunar(s); $('lunarResult').textContent = lunar ? `農曆：${lunar}` : '可按「轉換農曆」查看。';
-});
-function birthText() {
-  const hour = val('birthHour');
-  if (calendarMode === 'solar') {
-    const s = val('solarDate'); if (!s) return '';
-    const [y,m,d] = s.split('-'); const solar = `國曆 ${Number(y)}年${Number(m)}月${Number(d)}日`;
-    const lunar = solarToLunar(s);
-    return `${solar}${lunar ? `／農曆 ${lunar}` : ''}${hour ? `／${hour}` : ''}`;
-  }
-  return `${val('lunarText')}${hour ? `／${hour}` : ''}`;
-}
+$("#toStep2").onclick=()=>{resetForm();show("step2",2)};
+$("#back1").onclick=()=>show("step1",1);
 
-// 科儀與祭改到場
-rituals.forEach(r => r.addEventListener('change', update));
-document.querySelectorAll('.presence button').forEach(b => b.addEventListener('click', () => {
-  document.querySelectorAll('.presence button').forEach(x => x.classList.remove('on'));
-  b.classList.add('on'); $('presence').value=b.dataset.value;
-  $('clothes').classList.toggle('show', b.dataset.value === '本人不克到場'); update();
-}));
-document.querySelectorAll('input,textarea').forEach(x => x.addEventListener('input', update));
-function update() {
-  $('gaigaiExtra').classList.toggle('show', !!document.querySelector('.ritual[data-key="gaigai"]')?.checked);
-  const total = selected().reduce((s,r) => s + Number(r.dataset.price), 0);
-  $('total').textContent = 'NT$ ' + money(total);
-  $('summary').innerHTML = selected().length ? selected().map(r => `<b>${escapeHtml(r.dataset.name)}</b>　NT$${money(r.dataset.price)}`).join('<br><br>') : '請先填寫資料並選擇科儀。';
+times.forEach(t=>{let b=document.createElement("button");b.type="button";b.textContent=t;b.onclick=()=>{state.time=t;$("#timeGrid").querySelectorAll("button").forEach(x=>x.classList.toggle("selected",x===b))};$("#timeGrid").append(b)});
+zodiac.forEach(z=>{let b=document.createElement("button");b.type="button";b.textContent=z;b.onclick=()=>{state.zodiac=z;$("#zodiacGrid").querySelectorAll("button").forEach(x=>x.classList.toggle("selected",x===b))};$("#zodiacGrid").append(b)});
+
+$$("[data-calendar]").forEach(b=>b.onclick=()=>{
+ state.calendar=b.dataset.calendar;$$("[data-calendar]").forEach(x=>x.classList.toggle("selected",x===b));
+ $("#solarBox").classList.toggle("hidden",state.calendar!=="solar");$("#lunarBox").classList.toggle("hidden",state.calendar!=="lunar");
+});
+$$(".ritual").forEach(b=>b.onclick=()=>{
+ const r=b.dataset.ritual; state.rituals.has(r)?state.rituals.delete(r):state.rituals.add(r);
+ b.classList.toggle("selected",state.rituals.has(r)); $("#attendanceBox").classList.toggle("hidden",!state.rituals.has("gaiji")); updatePersonTotal();
+});
+$$("[data-attendance]").forEach(b=>b.onclick=()=>{
+ state.attendance=b.dataset.attendance;$$("[data-attendance]").forEach(x=>x.classList.toggle("selected",x===b));
+ $("#clothesWarning").classList.toggle("hidden",state.attendance!=="no");
+});
+function updatePersonTotal(){let t=[...state.rituals].reduce((s,r)=>s+ritualPrices[r],0);$("#personTotal").textContent=money(t)}
+function solarToLunar(dateStr){
+ if(!dateStr)return "";
+ try{
+   const d=new Date(dateStr+"T12:00:00");
+   const f=new Intl.DateTimeFormat("zh-TW-u-ca-chinese",{year:"numeric",month:"long",day:"numeric"});
+   return f.format(d);
+ }catch(e){return ""}
 }
-function row(k,v){return `<div class="rrow"><span>${escapeHtml(k)}</span><strong>${escapeHtml(v || '未填')}</strong></div>`;}
+$("#convertLunar").onclick=()=>{
+ const v=$("#solarDate").value;if(!v){$("#lunarResult").textContent="⚠️ 請先選擇國曆出生日期";return}
+ const r=solarToLunar(v);$("#lunarResult").textContent=r?("農曆："+r):"此裝置無法自動換算，請改用農曆手動填寫。";
+};
+function getBirth(){
+ if(state.calendar==="solar"){
+   const d=$("#solarDate").value;if(!d)return null;
+   const l=solarToLunar(d); return {type:"國曆",raw:d,lunar:l||"未換算"};
+ }
+ if(state.calendar==="lunar"){const t=$("#lunarText").value.trim();return t?{type:"農曆",raw:t,lunar:t}:null}
+ return null;
+}
 function validate(){
-  const e=[];
-  if(!val('contactName')) e.push('請填寫聯絡人姓名');
-  if(!val('phone')) e.push('請填寫聯絡電話');
-  if(!val('personName')) e.push('請填寫祈福人姓名');
-  if(calendarMode==='solar' && !val('solarDate')) e.push('請選擇國曆出生日期');
-  if(calendarMode==='lunar' && !val('lunarText')) e.push('請填寫農曆出生日期');
-  if(!val('birthHour')) e.push('請選擇時辰；不知道請選「吉時」');
-  if(!val('zodiac')) e.push('請選擇生肖');
-  if(!val('address')) e.push('請填寫地址');
-  if(!selected().length) e.push('請至少選擇一項科儀');
-  const gai = document.querySelector('.ritual[data-key="gaigai"]');
-  if(gai?.checked && !val('presence')) e.push('祭改請選擇本人是否到場');
-  return e;
+ let missing=[];if(!$("#personName").value.trim())missing.push("姓名");if(!getBirth())missing.push("生辰");
+ if(!state.time)missing.push("時辰／吉時");if(!state.zodiac)missing.push("生肖");if(!$("#address").value.trim())missing.push("地址");
+ if(!state.rituals.size)missing.push("至少選擇一項科儀");if(state.rituals.has("gaiji")&&!state.attendance)missing.push("祭改本人是否到場");
+ if(missing.length){$("#formError").textContent="⚠️ 尚未完成："+missing.join("、");$("#formError").classList.remove("hidden");return false}
+ $("#formError").classList.add("hidden");return true;
 }
-$('form').addEventListener('submit', e => {
-  e.preventDefault();
-  const errs=validate(); $('error').innerHTML=errs.map(escapeHtml).join('<br>');
-  if(errs.length){$('error').scrollIntoView({behavior:'smooth',block:'center'});return;}
-  let html=`<section class="person"><h3>聯絡人資料</h3>${row('聯絡人',val('contactName'))}${row('聯絡電話',val('phone'))}${val('lineName')?row('LINE名稱',val('lineName')):''}</section>`;
-  html+=`<section class="person"><h3>祈福人資料</h3>${row('姓名',val('personName'))}${row('生辰',birthText())}${row('生肖',val('zodiac'))}${row('地址',val('address'))}</section>`;
-  let no=0,total=0;
-  selected().forEach(r=>{
-    no++; total+=Number(r.dataset.price);
-    html+=`<section class="ritualBlock"><div class="ritualTitle"><b>${no}. ${escapeHtml(r.dataset.name)}</b><strong>NT$${money(r.dataset.price)}</strong></div>`;
-    if(r.dataset.key==='dou') html+=`<div class="quota">限25人｜名額以官方 LINE 回覆確認為準</div>`;
-    if(r.dataset.key==='gaigai'){
-      html+=row('本人到場',val('presence'));
-      if(val('presence')==='本人不克到場') html+=`<div class="clothesReceipt">⚠️ 未到場者請準備本人衣物，提前放置宮廟。</div>`;
-    }
-    html+='</section>';
-  });
-  if(val('note')) html+=`<section class="person"><h3>其他備註</h3><p>${escapeHtml(val('note'))}</p></section>`;
-  $('receiptBody').innerHTML=html; $('receiptTotal').textContent='NT$ '+money(total);
-  $('receiptModal').classList.add('show'); $('receiptModal').setAttribute('aria-hidden','false'); document.body.classList.add('locked');
-  setTimeout(()=>$('receipt').scrollIntoView({block:'start'}),50);
-});
-function closeModal(){ $('receiptModal').classList.remove('show'); $('receiptModal').setAttribute('aria-hidden','true'); document.body.classList.remove('locked'); }
-$('closeModal').addEventListener('click',closeModal); $('backEdit').addEventListener('click',closeModal);
-update();
+function collectPerson(){
+ const birth=getBirth();return {name:$("#personName").value.trim(),birth,time:state.time,zodiac:state.zodiac,address:$("#address").value.trim(),rituals:[...state.rituals],attendance:state.rituals.has("gaiji")?state.attendance:null,total:[...state.rituals].reduce((s,r)=>s+ritualPrices[r],0)}
+}
+$("#savePerson").onclick=()=>{
+ if(!validate())return;const p=collectPerson();
+ if(state.editing!==null){state.people[state.editing]=p;state.editing=null}else state.people.push(p);
+ renderPeople();
+ if(state.mode==="single"){renderFinal();show("step3",3)}else show("stepPeople",2);
+};
+function resetForm(p=null){
+ $("#personName").value=p?.name||"";$("#solarDate").value="";$("#lunarText").value="";$("#address").value=p?.address||"";$("#lunarResult").textContent="選擇日期後按「轉換成農曆」";
+ state.calendar=p?.birth?.type==="國曆"?"solar":p?.birth?.type==="農曆"?"lunar":null;state.time=p?.time||null;state.zodiac=p?.zodiac||null;state.attendance=p?.attendance||null;state.rituals=new Set(p?.rituals||[]);
+ if(p?.birth?.type==="國曆")$("#solarDate").value=p.birth.raw;if(p?.birth?.type==="農曆")$("#lunarText").value=p.birth.raw;
+ $$("[data-calendar]").forEach(x=>x.classList.toggle("selected",x.dataset.calendar===state.calendar));$("#solarBox").classList.toggle("hidden",state.calendar!=="solar");$("#lunarBox").classList.toggle("hidden",state.calendar!=="lunar");
+ $("#timeGrid").querySelectorAll("button").forEach(x=>x.classList.toggle("selected",x.textContent===state.time));$("#zodiacGrid").querySelectorAll("button").forEach(x=>x.classList.toggle("selected",x.textContent===state.zodiac));
+ $$(".ritual").forEach(x=>x.classList.toggle("selected",state.rituals.has(x.dataset.ritual)));$("#attendanceBox").classList.toggle("hidden",!state.rituals.has("gaiji"));
+ $$("[data-attendance]").forEach(x=>x.classList.toggle("selected",x.dataset.attendance===state.attendance));$("#clothesWarning").classList.toggle("hidden",state.attendance!=="no");
+ $("#formError").classList.add("hidden");updatePersonTotal();$("#personHeading").textContent=(state.editing!==null?"修改":"填寫")+"第 "+(state.editing!==null?state.editing+1:state.people.length+1)+" 位信徒資料";
+}
+function renderPeople(){
+ $("#peopleList").innerHTML=state.people.map((p,i)=>`<div class="personCard"><div class="personTop"><b>${i+1}. ${esc(p.name)}</b><strong>${money(p.total)}</strong></div><div class="chips">${p.rituals.map(r=>`<span class="chip">${ritualNames[r]}</span>`).join("")}</div><div class="miniActions"><button onclick="editPerson(${i})">✏️ 修改</button><button onclick="deletePerson(${i})">🗑️ 刪除</button></div></div>`).join("");
+}
+window.editPerson=i=>{state.editing=i;resetForm(state.people[i]);show("step2",2)}
+window.deletePerson=i=>{if(confirm("確定刪除「"+state.people[i].name+"」嗎？")){state.people.splice(i,1);renderPeople();if(!state.people.length) {resetForm();show("step2",2)}}}
+$("#addPerson").onclick=()=>{state.editing=null;resetForm();show("step2",2)}
+$("#groupNext").onclick=()=>{if(!state.people.length)return;renderFinal();show("step3",3)}
+function birthText(p){return p.birth.type==="國曆"?`國曆 ${p.birth.raw}／農曆 ${p.birth.lunar}`:`農曆 ${p.birth.raw}`}
+function renderFinal(){
+ $("#finalSummary").innerHTML=state.people.map((p,i)=>`<div class="summaryCard"><b>${i+1}. ${esc(p.name)}</b><div>${esc(birthText(p))}・${p.time}・生肖${p.zodiac}</div><div>${esc(p.address)}</div><div class="chips">${p.rituals.map(r=>`<span class="chip">${ritualNames[r]} ${money(ritualPrices[r])}</span>`).join("")}</div>${p.attendance==="no"?'<div class="warning">祭改本人不克到場：需提前準備本人衣物放置宮廟。</div>':""}</div>`).join("");
+ $("#grandTotal").textContent=money(state.people.reduce((s,p)=>s+p.total,0));
+}
+$("#backPeople").onclick=()=>{renderPeople();show(state.mode==="group"?"stepPeople":"step2",2)}
+$("#makeSlip").onclick=()=>{renderSlip();state.imageSaved=false;$("#toLineStep").disabled=true;$("#toLineStep").classList.add("locked");$("#toLineStep").textContent="請先儲存報名單照片";show("step4",4)}
+function renderSlip(){
+ const total=state.people.reduce((s,p)=>s+p.total,0);
+ $("#slipPreview").innerHTML=`<div class="slipHead"><h2>混元九龍太子聖誕祈福科儀</h2><b>報名確認單</b><div>共 ${state.people.length} 位</div></div>`+
+ state.people.map((p,i)=>`<div class="slipPerson"><b>${i+1}. ${esc(p.name)}</b><br>生辰：${esc(birthText(p))}<br>時辰：${p.time}<br>生肖：${p.zodiac}<br>地址：${esc(p.address)}<br>科儀：${p.rituals.map(r=>ritualNames[r]+" "+money(ritualPrices[r])).join("、")}${p.attendance?`<br>祭改到場：${p.attendance==="yes"?"本人會到場":"本人不克到場（需提前準備本人衣物）"}`:""}<br><b>小計：${money(p.total)}</b></div>`).join("")+
+ `<div class="slipTotal">應繳總額：${money(total)}</div><div style="margin-top:10px;font-size:12px">※ 祈安禮斗限25人，以官方LINE工作人員確認名額為準。<br>※ 此確認單須傳至官方LINE，經工作人員確認後才算完成報名。</div>`;
+}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function wrap(ctx,text,x,y,maxWidth,lineHeight){
+ const chars=[...text];let line="",lines=[];for(const ch of chars){let test=line+ch;if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=ch}else line=test}if(line)lines.push(line);lines.forEach((l,i)=>ctx.fillText(l,x,y+i*lineHeight));return y+lines.length*lineHeight
+}
+function makeCanvas(){
+ const W=1080,pad=70,line=46;let estimated=330+state.people.reduce((s,p)=>s+300+p.rituals.length*25,s);const H=Math.max(900,estimated);
+ const c=document.createElement("canvas");c.width=W;c.height=H;const ctx=c.getContext("2d");ctx.fillStyle="#fffaf0";ctx.fillRect(0,0,W,H);ctx.strokeStyle="#8b6325";ctx.lineWidth=6;ctx.strokeRect(24,24,W-48,H-48);
+ ctx.textAlign="center";ctx.fillStyle="#681922";ctx.font="bold 48px serif";ctx.fillText("混元九龍太子聖誕祈福科儀",W/2,90);ctx.font="bold 34px sans-serif";ctx.fillText("報名確認單",W/2,142);ctx.font="26px sans-serif";ctx.fillStyle="#3b2b22";ctx.fillText(`共 ${state.people.length} 位`,W/2,184);ctx.textAlign="left";let y=240;
+ state.people.forEach((p,i)=>{ctx.font="bold 32px sans-serif";ctx.fillStyle="#681922";ctx.fillText(`${i+1}. ${p.name}`,pad,y);y+=48;ctx.font="25px sans-serif";ctx.fillStyle="#2d241e";y=wrap(ctx,`生辰：${birthText(p)}`,pad,y,W-pad*2,line);y=wrap(ctx,`時辰：${p.time}　生肖：${p.zodiac}`,pad,y,W-pad*2,line);y=wrap(ctx,`地址：${p.address}`,pad,y,W-pad*2,line);y=wrap(ctx,`科儀：${p.rituals.map(r=>ritualNames[r]+" "+money(ritualPrices[r])).join("、")}`,pad,y,W-pad*2,line);if(p.attendance)y=wrap(ctx,`祭改到場：${p.attendance==="yes"?"本人會到場":"本人不克到場（需提前準備本人衣物）"}`,pad,y,W-pad*2,line);ctx.font="bold 26px sans-serif";ctx.fillText(`小計：${money(p.total)}`,pad,y);y+=48;ctx.strokeStyle="#cbb89b";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(pad,y-18);ctx.lineTo(W-pad,y-18);ctx.stroke()});
+ ctx.font="bold 36px sans-serif";ctx.fillStyle="#681922";ctx.textAlign="right";ctx.fillText(`應繳總額：${money(state.people.reduce((s,p)=>s+p.total,0))}`,W-pad,y+10);y+=68;ctx.textAlign="left";ctx.font="22px sans-serif";ctx.fillStyle="#5b514a";wrap(ctx,"※ 祈安禮斗限25人，以官方LINE工作人員確認名額為準。",pad,y,W-pad*2,36);wrap(ctx,"※ 請將本報名單照片傳至官方LINE，經工作人員確認後才算完成報名。",pad,y+38,W-pad*2,36);return c
+}
+$("#saveImage").onclick=()=>{
+ try{
+  const c=makeCanvas();c.toBlob(blob=>{
+   if(!blob){alert("圖片產生失敗，請直接截圖下方報名確認單。");return}
+   const file=new File([blob],"混元九龍太子聖誕-報名確認單.png",{type:"image/png"});
+   const done=()=>{state.imageSaved=true;$("#toLineStep").disabled=false;$("#toLineStep").classList.remove("locked");$("#toLineStep").textContent="我已儲存圖片，下一步 → 官方 LINE"};
+   if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+     navigator.share({files:[file],title:"混元九龍太子聖誕報名確認單"}).then(done).catch(()=>{});
+   }else{
+     const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=file.name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),3000);done();
+   }
+  },"image/png");
+ }catch(e){alert("此手機無法自動產生圖片，請直接截圖報名確認單。");state.imageSaved=true;$("#toLineStep").disabled=false;$("#toLineStep").classList.remove("locked");$("#toLineStep").textContent="我已截圖，下一步 → 官方 LINE"}
+};
+$("#toLineStep").onclick=()=>{if(state.imageSaved)show("step5",5)};

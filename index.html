@@ -1,18 +1,145 @@
 <!doctype html>
-<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#641414"><title>混元九龍太子｜聖誕祈福科儀報名</title><link rel="stylesheet" href="style.css"></head><body>
-<header class="hero"><div class="wrap"><nav><div class="brand"><span class="seal">混元<br>九龍</span><div>混元九龍太子<small>聖誕祈福科儀</small></div></div><a href="#signup" class="navbtn">立即報名</a></nav><div class="heroGrid"><div><div class="eyebrow">聖誕祈福・禮斗延生</div><h1>混元九龍太子<br>聖誕祈福科儀</h1><p>一次填寫祈福人資料，再勾選要參加的科儀。完成後會整理成固定格式確認單，請截圖後傳至官方 LINE。</p><a class="btn gold" href="#signup">開始填寫報名</a></div><div class="heroCard"><b>本次科儀項目</b><p>🏮 七星元辰燈　NT$200／位</p><p>🙏 祈安禮斗　NT$1,200／位（限25人）</p><p>🧧 祭改　NT$200／位</p></div></div></div></header>
-<section id="signup" class="signup"><div class="wrap"><div class="title"><small>線上報名</small><h2>填寫報名資料</h2><p>有紅色 * 的欄位為必填。若同一人參加多項科儀，生辰、地址、生肖不必重複填寫。</p></div><div class="layout"><form id="form" class="card" novalidate>
-<h3>① 聯絡人資料</h3><div class="grid2"><div><label for="contactName">聯絡人姓名 <em>*</em></label><input id="contactName" autocomplete="name" placeholder="請輸入姓名"></div><div><label for="phone">聯絡電話 <em>*</em></label><input id="phone" inputmode="tel" autocomplete="tel" placeholder="例如 0912-345-678"></div></div><label for="lineName">LINE 顯示名稱（選填）</label><input id="lineName" placeholder="方便廟方核對身分">
-<h3>② 祈福人資料</h3><label for="personName">祈福人姓名 <em>*</em></label><input id="personName" placeholder="請填寫參加科儀者姓名">
-<div class="birthCard"><label>生辰 <em>*</em></label><div class="calendarSwitch"><button type="button" class="calBtn on" data-cal="solar">填國曆</button><button type="button" class="calBtn" data-cal="lunar">直接填農曆</button></div><div id="solarBox"><label class="subLabel" for="solarDate">國曆出生日期</label><input id="solarDate" type="date"><button type="button" id="convertLunar" class="miniBtn">國曆 → 轉換農曆</button><div id="lunarResult" class="lunarResult">選擇國曆日期後，可按「轉換農曆」。</div></div><div id="lunarBox" class="hidden"><label class="subLabel" for="lunarText">農曆出生日期</label><input id="lunarText" placeholder="例如：農曆 82年7月5日"></div></div>
-<label>時辰 <em>*</em></label><p class="helper">知道時辰請直接點選；不知道請選「吉時」。</p><div id="hourChoices" class="choiceGrid"></div><input type="hidden" id="birthHour">
-<label>生肖 <em>*</em></label><div id="zodiacChoices" class="zodiac"></div><input type="hidden" id="zodiac">
-<label for="address">地址 <em>*</em></label><input id="address" autocomplete="street-address" placeholder="請填完整地址">
-<h3>③ 選擇科儀</h3><div class="items">
-<label class="item simple"><div class="itemTop"><input type="checkbox" class="ritual" data-key="lamp" data-name="七星元辰燈" data-price="200"><div class="itemMain"><div class="itemName"><span>🏮 七星元辰燈</span><strong>NT$200</strong></div><p>生辰、地址、生肖</p></div></div></label>
-<label class="item simple"><div class="itemTop"><input type="checkbox" class="ritual" data-key="dou" data-name="祈安禮斗" data-price="1200"><div class="itemMain"><div class="itemName"><span>🙏 祈安禮斗 <i>限25人</i></span><strong>NT$1,200</strong></div><p>生辰、地址｜名額以官方 LINE 最終確認為準</p></div></div></label>
-<label class="item"><div class="itemTop"><input type="checkbox" class="ritual" data-key="gaigai" data-name="祭改" data-price="200"><div class="itemMain"><div class="itemName"><span>🧧 祭改</span><strong>NT$200</strong></div><p>生辰、生肖、本人是否到場</p></div></div><div id="gaigaiExtra" class="conditional"><label>本人是否到場 <em>*</em></label><div class="presence"><button type="button" data-value="本人會到場">✓ 本人會到場</button><button type="button" data-value="本人不克到場">本人不克到場</button></div><input type="hidden" id="presence"><div id="clothes" class="clothes">📌 本人未到場：請準備本人衣物，並於科儀前提前放置於宮廟，交由廟方人員確認。</div></div></label>
-</div><label for="note">其他備註（選填）</label><textarea id="note" placeholder="有其他事項可填寫於此"></textarea><div id="error" class="error"></div><button class="btn submit" type="submit">產生報名確認單</button></form>
-<aside class="card sticky"><h3>目前報名內容</h3><div id="summary" class="summary">請先填寫資料並選擇科儀。</div><div class="total"><small>應繳金額</small><strong id="total">NT$ 0</strong></div></aside></div></div></section>
-<div id="receiptModal" class="modal" aria-hidden="true"><div class="modalShell"><div class="modalHead"><div><small>資料已整理完成</small><h2>④ 請截圖這張報名確認單</h2></div><button id="closeModal" type="button" aria-label="關閉">×</button></div><div class="captureHint">📸 請先使用手機「截圖」，將下方報名確認單保存下來。</div><div id="receipt" class="receipt"><div class="receiptTop"><div class="receiptSeal">混元<br>九龍</div><div><small>混元九龍太子</small><h2>聖誕祈福科儀・報名確認單</h2></div></div><div id="receiptBody"></div><div class="receiptTotal"><span>應繳總額</span><strong id="receiptTotal">NT$ 0</strong></div><div class="receiptFoot">此單為線上報名資料確認使用｜請將本畫面截圖後傳至官方 LINE</div></div><div class="afterShot"><h3>⑤ 截圖後，再前往官方 LINE</h3><div class="photoSteps"><div><b>1</b><span>先截圖<br><small>保存上方報名單</small></span></div><div><b>2</b><span>開啟 LINE<br><small>點下方綠色按鈕</small></span></div><div><b>3</b><span>傳送照片<br><small>選剛才的截圖送出</small></span></div></div><a class="btn lineBtn" href="https://lin.ee/u1LZ3VU" target="_blank" rel="noopener">我已截圖・前往官方 LINE 傳送照片</a><p class="finalwarn">⚠️ 請務必將「報名確認單截圖」傳送至官方 LINE，並以廟方回覆確認為完成報名。</p><button id="backEdit" class="editBtn" type="button">資料有誤・返回修改</button></div></div></div>
-<footer>混元九龍太子｜聖誕祈福科儀線上報名</footer><script src="app.js?v=3"></script></body></html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#5b1720">
+<title>混元九龍太子聖誕祈福科儀｜線上報名</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="brand"><span class="seal">混元<br>九龍</span><div><b>混元九龍太子</b><small>聖誕祈福科儀・線上報名</small></div></div>
+    <div class="heroText">
+      <div class="eyebrow">敬神祈福・元辰光彩・闔家平安</div>
+      <h1>太子聖誕<br>祈福科儀</h1>
+      <p>依照畫面一步一步填寫。完成後網站會整理成「報名確認單圖片」，請將圖片傳至官方 LINE，經工作人員確認後才算完成報名。</p>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="steps" aria-label="報名進度">
+    <div class="step active" data-stepdot="1"><b>1</b><span>報名方式</span></div>
+    <div class="step" data-stepdot="2"><b>2</b><span>填寫資料</span></div>
+    <div class="step" data-stepdot="3"><b>3</b><span>確認資料</span></div>
+    <div class="step" data-stepdot="4"><b>4</b><span>儲存圖片</span></div>
+    <div class="step" data-stepdot="5"><b>5</b><span>傳 LINE</span></div>
+  </div>
+
+  <section class="panel active" id="step1">
+    <div class="title"><span>步驟 1</span><h2>請選擇報名方式</h2><p>個人只填一位；家庭或多人一起報名請選團體報名。</p></div>
+    <div class="choiceGrid">
+      <button class="bigChoice" data-mode="single"><span class="emoji">👤</span><b>個人報名</b><small>只報名 1 位</small><i>點此選擇</i></button>
+      <button class="bigChoice" data-mode="group"><span class="emoji">👨‍👩‍👧‍👦</span><b>團體／家庭報名</b><small>可連續新增多人</small><i>點此選擇</i></button>
+    </div>
+    <button id="toStep2" class="primary full" disabled>請先選擇報名方式</button>
+  </section>
+
+  <section class="panel" id="step2">
+    <div class="title"><span>步驟 2</span><h2 id="personHeading">填寫第 1 位信徒資料</h2><p>有 * 的欄位必填。選中的按鈕會變色並顯示 ✓。</p></div>
+
+    <div class="card">
+      <label>姓名 *</label>
+      <input id="personName" autocomplete="name" placeholder="請輸入姓名">
+
+      <div class="subhead">生辰 *</div>
+      <div class="seg" id="calendarSeg">
+        <button data-calendar="solar">國曆</button>
+        <button data-calendar="lunar">農曆</button>
+      </div>
+
+      <div id="solarBox" class="hidden fieldBlock">
+        <label>國曆出生日期 *</label>
+        <input id="solarDate" type="date">
+        <button type="button" id="convertLunar" class="secondary full">轉換成農曆</button>
+        <div id="lunarResult" class="resultHint">選擇日期後按「轉換成農曆」</div>
+      </div>
+
+      <div id="lunarBox" class="hidden fieldBlock">
+        <label>農曆生辰 *</label>
+        <input id="lunarText" placeholder="例如：民國82年農曆七月初五">
+        <small class="hint">若不知道農曆日期，可改選「國曆」讓網站協助轉換。</small>
+      </div>
+
+      <div class="subhead">時辰 *</div>
+      <div class="selectGrid timeGrid" id="timeGrid"></div>
+      <div class="subhead">生肖 *</div>
+      <div class="selectGrid zodiacGrid" id="zodiacGrid"></div>
+
+      <label>地址 *</label>
+      <input id="address" placeholder="例如：高雄市○○區○○路○號">
+
+      <div class="subhead">選擇科儀 *</div>
+      <div class="rituals">
+        <button class="ritual" data-ritual="lamp" data-price="200"><span>🏮</span><div><b>七星元辰燈</b><small>生辰、地址、生肖</small></div><strong>NT$200</strong><i>點此選擇</i></button>
+        <button class="ritual" data-ritual="dou" data-price="1200"><span>🙏</span><div><b>祈安禮斗</b><small>限 25 人・生辰、地址</small></div><strong>NT$1,200</strong><i>點此選擇</i></button>
+        <button class="ritual" data-ritual="gaiji" data-price="200"><span>🧧</span><div><b>祭改</b><small>生辰、生肖、本人是否到場</small></div><strong>NT$200</strong><i>點此選擇</i></button>
+      </div>
+
+      <div id="attendanceBox" class="hidden">
+        <div class="subhead">祭改本人是否到場 *</div>
+        <div class="seg" id="attendanceSeg">
+          <button data-attendance="yes">本人會到場</button>
+          <button data-attendance="no">本人不克到場</button>
+        </div>
+        <div id="clothesWarning" class="warning hidden">⚠️ 本人若未到場，請準備本人衣物，並提前放置宮廟。</div>
+      </div>
+      <div id="formError" class="error hidden"></div>
+    </div>
+
+    <div class="stickySummary"><span>此位目前金額</span><strong id="personTotal">NT$0</strong></div>
+    <div class="actions2">
+      <button id="back1" class="secondary">← 上一步</button>
+      <button id="savePerson" class="primary">✓ 加入報名名單</button>
+    </div>
+  </section>
+
+  <section class="panel" id="stepPeople">
+    <div class="title"><span>團體報名</span><h2>目前報名名單</h2><p>請確認每一位都有加入。可繼續新增、修改或刪除。</p></div>
+    <div id="peopleList"></div>
+    <button id="addPerson" class="secondary full">＋ 新增下一位</button>
+    <button id="groupNext" class="primary full">下一步：確認全部資料 →</button>
+  </section>
+
+  <section class="panel" id="step3">
+    <div class="title"><span>步驟 3</span><h2>確認報名資料</h2><p>請先確認姓名、科儀及總金額。資料有誤可返回修改。</p></div>
+    <div id="finalSummary"></div>
+    <div class="grandTotal"><span>應繳總額</span><strong id="grandTotal">NT$0</strong></div>
+    <div class="notice">⚠️ 祈安禮斗限 25 人。網頁送出不代表保留名額，實際名額以官方 LINE 工作人員確認為準。</div>
+    <div class="actions2">
+      <button id="backPeople" class="secondary">← 返回修改</button>
+      <button id="makeSlip" class="primary">資料正確，產生報名單 →</button>
+    </div>
+  </section>
+
+  <section class="panel" id="step4">
+    <div class="title"><span>步驟 4</span><h2>先儲存報名單圖片</h2><p><b>這一步很重要：</b>請先把下面的報名確認單存成照片，再前往 LINE。</p></div>
+    <div id="slipPreview" class="slip"></div>
+    <button id="saveImage" class="primary full">⬇️ 儲存報名單照片</button>
+    <div id="saveHelp" class="helpBox">
+      <b>如果手機沒有直接出現「儲存」：</b><br>
+      會先開啟報名單圖片，請長按圖片 → 選「儲存到照片」。<br>
+      也可以直接截圖作為備用。
+    </div>
+    <button id="toLineStep" class="lineBtn full locked" disabled>請先儲存報名單照片</button>
+  </section>
+
+  <section class="panel" id="step5">
+    <div class="title"><span>步驟 5／最後一步</span><h2>把報名單照片傳到官方 LINE</h2><p>只有儲存圖片還沒有完成報名，請完成下面 4 個動作。</p></div>
+    <div class="lineSteps">
+      <div><b>1</b><span>按下「前往官方 LINE」</span></div>
+      <div><b>2</b><span>在 LINE 聊天室按照片圖示／＋</span></div>
+      <div><b>3</b><span>選擇剛才儲存的「報名確認單」照片</span></div>
+      <div><b>4</b><span>按傳送，等待工作人員回覆確認</span></div>
+    </div>
+    <a id="officialLine" class="lineBtn full" href="https://lin.ee/u1LZ3VU" target="_blank" rel="noopener">前往混元九龍太子官方 LINE</a>
+    <div class="danger">⚠️ 收到工作人員確認後，才算完成報名。<br>祈安禮斗名額亦以工作人員回覆為準。</div>
+  </section>
+</main>
+
+<footer>混元九龍太子｜聖誕祈福科儀線上報名</footer>
+<script src="app.js"></script>
+</body>
+</html>
