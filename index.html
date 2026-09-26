@@ -54,12 +54,17 @@
         <input id="solarDate" type="date">
         <button type="button" id="convertLunar" class="secondary full">轉換成農曆</button>
         <div id="lunarResult" class="resultHint">選擇日期後按「轉換成農曆」</div>
+        <small class="hint">最終報名單會統一顯示「民國XX年 農曆X月XX日」。</small>
       </div>
 
       <div id="lunarBox" class="hidden fieldBlock">
         <label>農曆生辰 *</label>
-        <input id="lunarText" placeholder="例如：民國82年農曆七月初五">
-        <small class="hint">若不知道農曆日期，可改選「國曆」讓網站協助轉換。</small>
+        <div class="birthGrid">
+          <div><span class="miniLabel">民國年</span><input id="rocYear" type="number" inputmode="numeric" min="1" max="200" placeholder="例如 82"></div>
+          <div><span class="miniLabel">農曆月</span><select id="lunarMonth"></select></div>
+          <div><span class="miniLabel">農曆日</span><select id="lunarDay"></select></div>
+        </div>
+        <small class="hint">例如：民國82年、農曆七月、初五。不知道農曆可改選「國曆」自動換算。</small>
       </div>
 
       <div class="subhead">時辰 *</div>

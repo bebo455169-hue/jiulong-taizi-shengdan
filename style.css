@@ -8,3 +8,8 @@
 .fallbackBtn{margin-top:6px}
 #generatedImageBox{margin-top:12px}
 #generatedImageBox img{display:block;width:100%;height:auto;border:1px solid var(--line);border-radius:10px;background:#fff}
+
+.birthGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.birthGrid select{width:100%;padding:14px 8px;border:2px solid #ddd1c3;border-radius:12px;font-size:16px;background:#fff}
+.miniLabel{display:block;font-size:13px;font-weight:800;color:var(--muted);margin-bottom:5px}
+@media(max-width:520px){.birthGrid{grid-template-columns:1fr}.birthGrid>div{display:grid;grid-template-columns:72px 1fr;align-items:center}.miniLabel{margin:0}}
