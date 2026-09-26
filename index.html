@@ -18,7 +18,7 @@ label{display:block;font-weight:900;margin:15px 0 6px}input,select{width:100%;pa
 .total{display:flex;justify-content:space-between;align-items:center;background:#681922;color:#fff;border-radius:14px;padding:15px;margin-top:12px}.total b{font-size:25px;color:#f2d27d}.actions{display:grid;grid-template-columns:1fr 2fr;gap:8px}.person,.summary{border:1px solid var(--border);background:#fff;border-radius:14px;padding:13px;margin:9px 0}.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}.chip{background:#f4e4b8;border-radius:99px;padding:4px 8px;font-size:13px}.mini{display:flex;gap:6px;margin-top:8px}.mini button{border:0;border-radius:8px;padding:7px 10px;font-weight:800}
 .slip{border:2px solid #896329;background:#fffaf0;border-radius:8px;padding:16px}.slip h3{text-align:center;color:#681922;margin:0 0 10px;font-size:22px}.sp{border-top:1px dashed #baa98e;padding:11px 0}.fallback img{width:100%;display:block;margin-top:10px;border-radius:8px}footer{text-align:center;color:#766d66;padding:0 15px 35px}
 @media(max-width:520px){.choice{grid-template-columns:repeat(3,1fr)}.lunar{grid-template-columns:1fr}.actions{grid-template-columns:1fr}.mode{grid-template-columns:40px 1fr}.mode .state{grid-column:2}.p span{font-size:10px}.card{padding:16px}}
-</style>
+.fallback .notice{margin-top:0}.fallback img{border:2px solid #8a6429;background:#fffaf0}#lineStep{margin-top:16px}#lineStep .line{font-size:18px;padding:17px}#download{font-size:18px}</style>
 </head>
 <body>
 <header><div class="wrap"><b>混元九龍太子</b><h1>聖誕祈福科儀</h1><p>線上報名｜請依照畫面一步一步完成</p></div></header>
@@ -50,7 +50,16 @@ label{display:block;font-weight:900;margin:15px 0 6px}input,select{width:100%;pa
 
 <section id="s3" class="screen"><div class="card"><div class="step">步驟 3</div><h2>確認報名資料</h2><p class="lead">請確認姓名、生辰、科儀與總金額。</p><div id="summary"></div><div class="total"><span>應繳總額</span><b id="grand">NT$0</b></div><div class="notice">⚠️ 祈安禮斗限 25 人。網頁送出不代表保留名額，實際名額以官方 LINE 工作人員確認為準。</div><div class="actions"><button type="button" id="backEdit" class="btn secondary">← 返回修改</button><button type="button" id="next3" class="btn primary">資料正確，下一步 →</button></div></div></section>
 
-<section id="s4" class="screen"><div class="card"><div class="step">步驟 4／最後一步</div><h2>傳送報名單</h2><p class="lead">按「傳送報名單」，手機會開啟分享選單。</p><div id="slip" class="slip"></div><button type="button" id="share" class="btn line">📤 傳送報名單</button><button type="button" id="download" class="btn secondary">⬇️ 無法分享？改用儲存圖片</button><div id="fallback" class="fallback hidden"></div><a class="btn line" href="https://lin.ee/u1LZ3VU" target="_blank" rel="noopener">前往官方 LINE</a><div class="warn">⚠️ 傳送報名單至官方 LINE，並收到工作人員確認後，才算完成報名。</div></div></section>
+<section id="s4" class="screen"><div class="card"><div class="step">步驟 4／最後一步</div><h2>儲存並傳送報名單</h2>
+<div class="notice"><b>請依照下面 2 個步驟完成報名：</b><br>① 先儲存報名單照片<br>② 再前往官方 LINE，從手機相簿選擇剛才的報名單照片傳送</div>
+<div id="slip" class="slip"></div>
+<button type="button" id="download" class="btn primary">⬇️ 第一步：儲存報名單照片</button>
+<div id="fallback" class="fallback hidden"></div>
+<div id="lineStep" class="hidden">
+<div class="notice"><b>✓ 報名單照片已產生</b><br>請確認照片已儲存到手機相簿，再進行第二步。</div>
+<a class="btn line" href="https://lin.ee/u1LZ3VU" target="_blank" rel="noopener">LINE　第二步：前往官方 LINE 傳送照片</a>
+</div>
+<div class="warn">⚠️ 到官方 LINE 後，請從相簿選擇剛才儲存的報名單照片並傳送。收到工作人員確認後，才算完成報名。</div></div></section>
 </main><footer>混元九龍太子｜聖誕祈福科儀線上報名</footer>
 <script>
 (()=>{"use strict";
@@ -83,8 +92,27 @@ $$(".ritual").forEach(b=>b.onclick=()=>{let r=b.dataset.r;S.rituals.has(r)?S.rit
 $$(".att").forEach(b=>b.onclick=()=>{S.att=b.dataset.att;one(".att",b);$("#cloth").classList.toggle("hidden",S.att!=="no")});
 $("#save").onclick=()=>{if(!valid())return;let p=getPerson();if(S.edit!==null){S.people[S.edit]=p;S.edit=null}else S.people.push(p);if(S.mode==="single"){summary();show("s3",3)}else{list();show("group",2)}};
 $("#add").onclick=()=>{S.edit=null;reset();show("s2",2)};$("#confirmGroup").onclick=()=>{if(S.people.length){summary();show("s3",3)}};$("#backEdit").onclick=()=>{if(S.mode==="group"){list();show("group",2)}else{S.edit=0;reset(S.people[0]);show("s2",2)}};$("#next3").onclick=()=>{slip();show("s4",4)};
-$("#share").onclick=async()=>{try{const b=await blob(),f=new File([b],"混元九龍太子聖誕-報名確認單.png",{type:"image/png"});if(navigator.share&&(!navigator.canShare||navigator.canShare({files:[f]})))await navigator.share({files:[f],title:"混元九龍太子聖誕報名確認單"});else throw new Error("不支援分享")}catch(e){if(e&&e.name==="AbortError")return;$("#download").click()}};
-$("#download").onclick=async()=>{try{const b=await blob(),u=URL.createObjectURL(b);$("#fallback").classList.remove("hidden");$("#fallback").innerHTML="";let im=new Image();im.src=u;$("#fallback").appendChild(im);let a=document.createElement("a");a.href=u;a.download="混元九龍太子聖誕-報名確認單.png";a.className="btn primary";a.style.display="block";a.style.textAlign="center";a.style.textDecoration="none";a.textContent="⬇️ 下載／儲存報名單圖片";$("#fallback").appendChild(a)}catch(e){alert("此瀏覽器無法產生圖片，請直接截圖報名確認單。")}};
+$("#download").onclick=async()=>{try{
+ const b=await blob(),u=URL.createObjectURL(b);
+ $("#fallback").classList.remove("hidden");
+ $("#fallback").innerHTML="";
+ let tip=document.createElement("div");
+ tip.className="notice";
+ tip.innerHTML="<b>請把下面這張報名單存到手機：</b><br>iPhone：長按圖片 →「儲存到照片」<br>Android：長按圖片 →「下載圖片／儲存圖片」";
+ $("#fallback").appendChild(tip);
+ let im=new Image();
+ im.src=u;im.alt="報名確認單圖片";
+ $("#fallback").appendChild(im);
+ let a=document.createElement("a");
+ a.href=u;a.download="混元九龍太子聖誕-報名確認單.png";
+ a.className="btn primary";
+ a.style.display="block";a.style.textAlign="center";a.style.textDecoration="none";
+ a.textContent="⬇️ 下載／儲存這張報名單";
+ $("#fallback").appendChild(a);
+ $("#lineStep").classList.remove("hidden");
+ $("#download").textContent="✓ 報名單照片已產生";
+ $("#fallback").scrollIntoView({behavior:"smooth",block:"start"});
+}catch(e){alert("此瀏覽器無法產生圖片，請直接截圖上方報名確認單，再前往官方 LINE 傳送。")}};
 })();
 </script>
 </body></html>
